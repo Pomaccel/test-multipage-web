@@ -172,39 +172,74 @@ if gemini_api_key:
                     Below is the detailed schema of the database, including table names, column names, data types, and descriptions. 
                     Use this information to generate accurate SQL queries based on user input. 
                     ### Data Dictionary 
-
+                    
                     Table 'madt-finalproject.finalproject_data.inv_transaction'
-                    | Column Name                       | Data Type   | Description                                 | 
-                    |-----------------------------------|-------------|---------------------------------------------| 
-                    | ProductId                         | STRING      | ProductId                                   | 
-                    | StoreId                           | STRING      | StoreId                                     | 
-                    | TypeId                            | STRING      | Invoice type ID.                            |
-                    | InvoiceNo                         | STRING      | Invoice number.                             | 
-                    | Reorder_Cause_ID                  | STRING      | Reorder id.                                 | 
-                    | Quantity                          | INT64       | Quantity of products in each invoices.      | 
-                    | CustomerID                        | STRING      | Customer ID.                                | 
-                    | Customer                          | STRING      | Customer name.                              | 
-                    | Country                           | STRING      | Customer country.                           | 
-                    | OpticMainID                       | STRING      | Optical ID for each customer.               | 
-                    | Category                          | STRING      | Customer category.                          | 
-                    | zoneId                            | STRING      | Zone ID.                                    |
-                    | InvoiceDate                       | DATE        | Invoice Date.                               |
-                    | InvoiceYear                       | INT64       | Invoice Year.                               |
-                    | InvoiceMonth                      | INT64       | Invoice Month.                              |
-                    | InvoiceDay                        | INT64       | Invoice day.                                |
-                    | InvoiceWeek                       | INT64       | Invoice week.                               |
-                    | InvoiceQuarter                    | INT64       | Invoice quarter.                            |
-                    | type_name                         | STRING      | Type of invoice including Credit Note, Debit Note, Invoice Sales, Other charge  | 
-                    | lenstype                          | STRING      | lenstype                                    | 
-                    | Part_Description                  | STRING      | Product description                         | 
-                    | Material_Type                     | STRING      | Type of material.                           | 
-                    | Lens_Type                         | STRING      | Type of lens.                               | 
-                    | price                             | FLOAT64     | Price of each products.                     | 
-                    | cause                             | STRING      | cause of reorder.                           |  
-                    | Store                             | STRING      | Store name.                                 | 
-                    | Zoning_ProvinceEN                 | STRING      | Province(English)                           | 
-                    | Zoning_ProvinceTH                 | STRING      | Province(Thai)                              | 
-                    | Zoning_Region                     | STRING      | Region                                      | 
+                    data_dictionary = {
+                                        "customer": {
+                                            "CustomerID": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each customer"},
+                                            "Customer": {"type": "STRING", "description": "Name of the customer"},
+                                            "Country": {"type": "STRING", "description": "Country where the customer resides"},
+                                            "Customer_Category": {"type": "STRING", "description": "Category or type of customer"},
+                                            "provinceId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the province where the customer is located"},
+                                            "Latitude": {"type": "FLOAT", "description": "Latitude coordinate of the customer's location"},
+                                            "Longitude": {"type": "FLOAT", "description": "Longitude coordinate of the customer's location"}
+                                        },
+                                        "invoice": {
+                                            "InvoiceNo": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each invoice"},
+                                            "CustomerID": {"type": "STRING", "key": "Foreign Key", "description": "Customer ID linked to the invoice"},
+                                            "InvoiceDate": {"type": "DATE", "description": "Date when the invoice was issued"}
+                                        },
+                                        "product": {
+                                            "ProductId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each product"},
+                                            "lenstype": {"type": "STRING", "description": "Type of lens associated with the product"},
+                                            "Part_Description": {"type": "STRING", "description": "Description of the product parts"},
+                                            "Material_Type": {"type": "STRING", "description": "Type of material used in the product"},
+                                            "Lens_Type": {"type": "STRING", "description": "Category or type of lens"},
+                                            "price": {"type": "FLOAT", "description": "Price of the product"}
+                                        },
+                                        "reorder": {
+                                            "reorder_cause_id": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each reorder cause"},
+                                            "cause": {"type": "STRING", "description": "Reason for reorder (e.g., 'GOT WRONG POWER', 'GOT SCRATCHED LENSES')"}
+                                        },
+                                        "zone": {
+                                            "zoneId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each zone"},
+                                            "zone_name": {"type": "STRING", "description": "Name of the zone (e.g., 'C1_BANGKOK', 'C2_CENTRAL')"},
+                                            "regionId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the region associated with the zone"}
+                                        },
+                                        "region": {
+                                            "regionId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each region"},
+                                            "region_name": {"type": "STRING", "description": "Name of the region (e.g., 'Central', 'Eastern')"}
+                                        },
+                                        "transaction": {
+                                            "ProductId": {"type": "STRING", "key": "Foreign Key", "description": "ID of the product involved in the transaction"},
+                                            "TypeId": {"type": "STRING", "description": "Type of transaction"},
+                                            "InvoiceNo": {"type": "STRING", "key": "Foreign Key", "description": "Invoice number associated with the transaction"},
+                                            "Reorder_Cause_ID": {"type": "STRING", "key": "Foreign Key", "description": "ID of the reason for reorder, if applicable"},
+                                            "Quantity": {"type": "INT64", "description": "Quantity of the product in the transaction"}
+                                        },
+                                        "SalesPerson": {
+                                            "sales_id": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each salesperson"},
+                                            "salesperson_name": {"type": "STRING", "description": "Name of the salesperson"},
+                                            "average_round_trip_hours": {"type": "INT64", "description": "Average time for a round trip made by the salesperson"}
+                                        },
+                                        "CustomerSales": {
+                                            "customer_id": {"type": "STRING", "key": "Foreign Key", "description": "ID of the customer"},
+                                            "sales_id": {"type": "STRING", "key": "Primary Key", "description": "ID linking the salesperson to the customer"}
+                                        },
+                                        "province": {
+                                            "provinceId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each province"},
+                                            "province_name": {"type": "STRING", "description": "Province name in Thai"},
+                                            "province_name_eng": {"type": "STRING", "description": "Province name in English"},
+                                            "regionId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the region containing the province"},
+                                            "zoneId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the zone containing the province"}
+                                        },
+                                        "invoice_type": {
+                                            "typeId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each invoice type"},
+                                            "type_name": {"type": "STRING", "description": "Type of invoice (e.g., 'Credit Note', 'Debit Note', 'Invoice Sales', 'Other Charge')"}
+                                        }
+                                    }
+                    
+                    
                     """
 
             # Add chat history to the prompt
