@@ -227,6 +227,7 @@ if gemini_api_key :
                     
                     plot_code = TF_graph(result_data).replace('```','').replace('python','').strip()    
                     #st.write(f"Output from TF_graph: {plot_code}")                                          # For debug
+                    st.session_state.chat_history.append(("assistant",plot_code))
                     st.chat_message("assistant").markdown(plot_code)
                     #exec(plot_code)                                                                         # For debug  
 
