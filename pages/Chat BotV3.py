@@ -226,6 +226,7 @@ if gemini_api_key :
 
         # Append user input to chat history
         st.session_state.chat_history.append(("user", user_input))
+        st.session_state.user_input_history.append(user_input)                  # add to user input history
         st.chat_message("user").markdown(user_input)
 
         # Check Type of user input
