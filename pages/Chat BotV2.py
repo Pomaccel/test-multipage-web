@@ -91,7 +91,7 @@ agent_05 = genai.GenerativeModel("gemini-pro")
 def TF_graph(result_data):
     result_prompt = f"""Generate Python code to:
     1. Define a Pandas DataFrame named `df` based on the following data structure: {result_data}.
-    2. Use plotly express to create a suitable graph based on the DataFrame structure and color by data.
+    2. Use plotly express to create a suitable graph based on the DataFrame structure and color by data and sort data by value for visalize.
     3. Return only executable Python code without markdown formatting or comments.
     The code should be fully executable in a Python environment and ready to display in Streamlit."""
     response = agent_05.generate_content(result_prompt)
@@ -271,6 +271,7 @@ if gemini_api_key :
 # i want to know sale person name and sale person average round trip hours top 10 
 # i want to know unique Customer Name  by each province
 # i want to know product lens type and Quantity  of each lens type 
+# i want to know Customer Country by each Customer Category
 # thank you
 
 
