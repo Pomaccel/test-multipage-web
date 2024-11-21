@@ -6,7 +6,7 @@ import json
 import db_dtypes
 
 # Main Application Title 
-st.title("ChatBot 0.41 MADT")
+st.title("ChatBot 0.42 MADT")
 
 
 # Initialize session state variables if not already present
@@ -22,6 +22,20 @@ if "qry" not in st.session_state:
 # Create Chatbot history
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [] # Empty list
+
+# Sidebar to collect and display user inquiries
+if "user_inquiries" not in st.session_state:
+    st.session_state.user_inquiries = []  # List to collect user inquiries
+
+# Add a sidebar for displaying user inquiries
+with st.sidebar:
+    st.header("User Inquiries")
+    if st.session_state.user_inquiries:
+        for i, inquiry in enumerate(st.session_state.user_inquiries):
+            st.markdown(f"{i + 1}. {inquiry}")
+    else:
+        st.write("No inquiries yet.")
+    st.sidebar.write("---")
 
 # Generate welcome message if gemini key correct
 if "greeted" not in st.session_state:
