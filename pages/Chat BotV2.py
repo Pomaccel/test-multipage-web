@@ -2,7 +2,6 @@ import streamlit as st
 import google.generativeai as genai
 from google.cloud import bigquery
 import plotly.express as px
-import matplotlib.pyplot as plt
 import json
 import db_dtypes
 
@@ -23,6 +22,10 @@ if "qry" not in st.session_state:
 # Create Chatbot history
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [] # Empty list
+
+# Generate welcome message if gemini key correct
+if "greeted" not in st.session_state:
+    st.session_state.greeted = False
 
 # Create Upload Panel for upload JSON Key file
 upload_file = st.file_uploader("Upload Google Service Account Key JSON", type="json")
@@ -88,7 +91,7 @@ agent_05 = genai.GenerativeModel("gemini-pro")
 def TF_graph(result_data):
     result_prompt = f"""Generate Python code to:
     1. Define a Pandas DataFrame named `df` based on the following data structure: {result_data}.
-    2. Use either plotly or seaborn to create a suitable graph based on the DataFrame structure.
+    2. Use plotly to create a suitable graph based on the DataFrame structure.
     3. Return only executable Python code without markdown formatting or comments.
     The code should be fully executable in a Python environment and ready to display in Streamlit."""
     response = agent_05.generate_content(result_prompt)
@@ -124,8 +127,8 @@ def run_bigquery_query(query):
         df = results.to_dataframe()
         return df
 #----------------------------------------------------------------------------------------------------------------------
-data_dict = """   Data Dictionary
-                    the table name is  'madt-finalproject.finalproject_data.transaction_summary_with_sales'
+data_dict = """ If  it's a question or requirement or any wording that about retrieving data from a database base on 
+                    the table name is 'madt-finalproject.finalproject_data.transaction_summary_with_sales'
 
                     | Column Name                       | Data Type   | Description                                 |
                     |-----------------------------------|-------------|---------------------------------------------|
@@ -140,7 +143,7 @@ data_dict = """   Data Dictionary
                     | CustomerCategory                  | STRING      | Category of Customer                        |
                     | ProductDescription                | STRING      | Product description                         |
                     | ProductMaterialType               | STRING      | Material of Product                         |
-                    | ProductLensType                  | STRING      | Type of lens.                               |
+                    | ProductLensType                   | STRING      | Type of lens.                               |
                     | ProductPrice                      | FLOAT64     | Price of each product.                      |
                     | Return_item_cause                 | STRING      | Cause of Return Item                        |
                     | SalesPersonName                   | STRING      | Sale Person name                            |
@@ -163,6 +166,22 @@ if gemini_api_key :
     # Display previous chat history from user 
     for role, message in st.session_state.chat_history:
         st.chat_message(role).markdown(message)
+ 
+    # Generate greeting if not already greeted
+    if not st.session_state.greeted:
+        greeting_prompt = "Greet the user as a friendly and knowledgeable data engineer. \
+                        Introduce yourself (you are AI assistant) and let the user know you're here to assist with \
+                        any questions they may have about transforming user questions into SQL queries to retrieve data from a BigQuery database."
+
+        try:
+            response = model.generate_content(greeting_prompt)
+            bot_response = response.text.strip()
+            st.session_state.chat_history.append(("assistant", bot_response))
+            st.chat_message("assistant").markdown(bot_response)
+            st.session_state.greeted = True
+
+        except Exception as e:
+            st.error(f"Error generating AI greeting: {e}")
 
   # Create chat box if gemini_api_key is correct  
     if user_input := st.chat_input("Type your message here..."):
@@ -205,6 +224,7 @@ if gemini_api_key :
                     # Excute The graph 
                     # Agent 05 Working 
                     
+                    
                     plot_code = TF_graph(result_data).replace('```','').replace('python','').strip()    
                     #st.write(f"Output from TF_graph: {plot_code}")                                          # For debug
                     #exec(plot_code)                                                                         # For debug
@@ -220,11 +240,14 @@ if gemini_api_key :
 
                         # Display the graph in the chatbot
                         st.chat_message("assistant").markdown("Here is the graph to represent the query:")
-                        st.plotly_chart(plotly_fig)  # Render the Plotly figure in Streamlit
+                        fig_show = st.plotly_chart(plotly_fig)  # Render the Plotly figure in Streamlit
+                        #st.chat_message("assistant").markdown(fig_show)
+                        
 
                     else:
                         # If no figure is found, notify the user
                         st.chat_message("assistant").markdown("The code was executed successfully, but no graph was generated.")
+                    
 
                 except Exception as e:
                     # Handle and display any errors during code execution
@@ -247,7 +270,7 @@ if gemini_api_key :
 # i want to know unique Product Id  
 # i want to know sale person name and sale person average round trip hours top 10 
 # i want to know unique Customer Name  by each province
-# i want to know Product Price and product lens type 
+# i want to know product lens type and Quantity  of each lens type 
 # thank you
 
 
