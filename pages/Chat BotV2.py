@@ -52,9 +52,9 @@ gemini_api_key = 'AIzaSyBgvCcXEPMApduoTr_w8qJBQsrMan8rEDM'
 ## Agent 01: Categorize User Input
 agent_01 = genai.GenerativeModel("gemini-pro")
 def categorize_task(user_input):
-    categorize_prompt = f"""Categorize the following user input into one of three categories:
-                        - "query_question"       if it's a question or requirement or any wording that about retrieving data from a database base on {data_dict}
-                        - "common_conversation"  if it's a general conversation such as greeting, general question, and anything else.
+    categorize_prompt = f"""Categorize the following user input into one of two categories, you will return only 01 or 02::
+                        - "01" : query_question if it's a question or requirement or any wording that about retrieving data from a database base on {data_dict}
+                        - "02" : common_conversation if it's a general conversation such as greeting, general question, and anything else.
                         User input: "{user_input}" """
     response = agent_01.generate_content(categorize_prompt)
     bot_response = response.text.strip()
@@ -195,7 +195,7 @@ if gemini_api_key :
             task_type = categorize_task(user_input)
             # st.write(f'Task type : {task_type}')
             
-            if task_type == "query_question":
+            if int(task_type) == 1 :
                 sql_query = generate_sql_query(user_input)              # Agent 02 Working 
                 #st.write(f'Generated SQL Query:\n {sql_query}')                                    #For debug
                 try:
@@ -224,7 +224,6 @@ if gemini_api_key :
                     # Excute The graph 
                     # Agent 05 Working 
                     
-                    
                     plot_code = TF_graph(result_data).replace('```','').replace('python','').strip()    
                     #st.write(f"Output from TF_graph: {plot_code}")                                          # For debug
                     st.session_state.chat_history.append(("assistant",plot_code))
@@ -242,8 +241,6 @@ if gemini_api_key :
                         # Display the graph in the chatbot
                         st.chat_message("assistant").markdown("Here is the graph to represent the query:")
                         fig_show = st.plotly_chart(plotly_fig)  # Render the Plotly figure in Streamlit
-
-                        
 
                     else:
                         # If no figure is found, notify the user
