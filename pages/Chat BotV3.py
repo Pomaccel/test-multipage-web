@@ -8,82 +8,6 @@ import db_dtypes
 # Main Application Title 
 st.title("ChatBot 0.42 MADT")
 
-
-# Initialize session state variables if not already present
-if "gemini_api_key" not in st.session_state:
-    st.session_state.gemini_api_key = None
-
-if "google_service_account_josn" not in st.session_state:
-    st.session_state.google_service_account_json = None
-
-if "qry" not in st.session_state:
-    st.session_state.qry = None # Store SQL qury
-
-# Create Chatbot history
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [] # Empty list
-
-# Create user_input history
-if "user_input_history" not in st.session_state:
-    st.session_state.user_input_history = []
-
-if "qry" not in st.session_state:
-    st.session_state.qry = None  # Store SQL query here
-
-# Generate welcome message if gemini key correct
-if "greeted" not in st.session_state:
-    st.session_state.greeted = False
-
-# Sidebar to display user input history as buttons
-st.sidebar.title("User Input History")
-
-# Add "Clear History" button in the sidebar
-if st.sidebar.button("Clear History"):
-    st.session_state.chat_history = []
-    st.session_state.user_input_history = []
-    st.session_state.greeted = False
-    st.session_state.rerun_needed = True  # Set flag to trigger a rerun
-
-# Loop through the user input history and create a button for each one
-for i, prompt in enumerate(st.session_state.user_input_history, start=1):
-    if st.sidebar.button(f"{i}. {prompt}"):
-        st.session_state.chat_history = [("user", prompt)]  # Start fresh with that prompt        
-        st.session_state.rerun_needed = True  # Set flag to trigger a rerun
-
-        user_input = prompt
-        try:
-            query_prompt = f"""You are an AI assistant that transforms user questions into SQL queries to retrieve data from a BigQuery database. 
-            Use the schema information and generate a SQL query based on the user's input: '{user_input}'."""
-
-            response = model.generate_content(query_prompt)
-            bot_response = response.text
-
-            st.session_state.qry = bot_response
-            st.session_state.chat_history.append(("assistant", bot_response))
-
-        except Exception as e:
-            st.error(f"Error generating AI response: {e}")
-        break  # Exit the loop after processing the first clicked history button
-
-# Create Upload Panel for upload JSON Key file
-upload_file = st.file_uploader("Upload Google Service Account Key JSON", type="json")
-
-## Check status upload json key
-if upload_file :
-    try:
-        # Load the upload JSON File into session state
-        st.session_state.google_service_account_json = json.load(upload_file)           # Load file 
-        st.success("Google Service Account Key file uploaded successfully!")
-    except Exception as e :
-        st.error(f"Error reading the uploaded file: {e}")
-
-
-## Create an type space for GEMINI API KEY
-
-gemini_api_key = 'AIzaSyBgvCcXEPMApduoTr_w8qJBQsrMan8rEDM'
-#gemini_api_key = st.text_input("Gemini API key : ", placeholder= "Type your API Key here...", type = 'password')
-
-
 #---------------------------------------------------------------------------------------------------
 # Ai system function 
 
@@ -137,6 +61,104 @@ def TF_graph(result_data):
 
 ##--------------------------------------------------------------------------------------
 
+# Initialize session state variables if not already present
+if "gemini_api_key" not in st.session_state:
+    st.session_state.gemini_api_key = None
+
+if "google_service_account_josn" not in st.session_state:
+    st.session_state.google_service_account_json = None
+
+if "qry" not in st.session_state:
+    st.session_state.qry = None # Store SQL qury
+
+# Create Chatbot history
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [] # Empty list
+
+# Create user_input history
+if "user_input_history" not in st.session_state:
+    st.session_state.user_input_history = []
+
+if "qry" not in st.session_state:
+    st.session_state.qry = None  # Store SQL query here
+
+# Generate welcome message if gemini key correct
+if "greeted" not in st.session_state:
+    st.session_state.greeted = False
+
+# Sidebar to display user input history as buttons
+st.sidebar.title("User Input History")
+
+# Add "Clear History" button in the sidebar
+if st.sidebar.button("Clear History"):
+    st.session_state.chat_history = []
+    st.session_state.user_input_history = []
+    st.session_state.greeted = False
+    st.session_state.rerun_needed = True  # Set flag to trigger a rerun
+
+# Loop through the user input history and create a button for each one
+for i, prompt in enumerate(st.session_state.user_input_history, start=1):
+    if st.sidebar.button(f"{i}. {prompt}"):
+        # Reset chat history with the selected prompt
+        st.session_state.chat_history = [("user", prompt)]
+        st.session_state.rerun_needed = True  # Set flag to trigger a rerun
+        user_input = prompt
+
+        try:
+            # Generate bot response based on SQL query
+            bot_response = sql_query
+            st.session_state.chat_history.append(("assistant", bot_response))
+            st.chat_message("assistant").markdown(bot_response)
+
+            # Execute the SQL query and store the results
+            result_data = run_bigquery_query(sql_query)
+
+            # Convert SQL results to conversational response
+            conversational_answer = sql_result_to_conversation(result_data)
+            st.session_state.chat_history.append(("assistant", conversational_answer))
+            st.chat_message("assistant").markdown(conversational_answer)
+
+            # Generate and execute graph code
+            plot_code = TF_graph(result_data).replace('```', '').replace('python', '').strip()
+
+            # Execute plot code in a safe local scope
+            local_scope = {}
+            exec(plot_code, {}, local_scope)
+
+            # Check if a Plotly figure is generated
+            if "fig" in local_scope:  # Assuming the Plotly figure is stored in 'fig'
+                plotly_fig = local_scope["fig"]
+                st.chat_message("assistant").markdown("Here is the graph to represent the query:")
+                st.plotly_chart(plotly_fig)  # Render the Plotly figure in Streamlit
+            else:
+                st.chat_message("assistant").markdown("The code was executed successfully, but no graph was generated.")
+
+        except Exception as e:
+            # Handle and display any errors during execution
+            error_message = f"Error executing the plot code: {e}"
+            st.chat_message("assistant").markdown(f"**Error:** {error_message}")
+        
+        break  # Exit the loop after processing the first clicked history button
+
+# Create Upload Panel for upload JSON Key file
+upload_file = st.file_uploader("Upload Google Service Account Key JSON", type="json")
+
+## Check status upload json key
+if upload_file :
+    try:
+        # Load the upload JSON File into session state
+        st.session_state.google_service_account_json = json.load(upload_file)           # Load file 
+        st.success("Google Service Account Key file uploaded successfully!")
+    except Exception as e :
+        st.error(f"Error reading the uploaded file: {e}")
+
+
+## Create an type space for GEMINI API KEY
+
+gemini_api_key = 'AIzaSyBgvCcXEPMApduoTr_w8qJBQsrMan8rEDM'
+#gemini_api_key = st.text_input("Gemini API key : ", placeholder= "Type your API Key here...", type = 'password')
+
+##--------------------------------------------------------------------------------------
 # Big query system 
 ## Function to initialize BigQuery client
 def init_bigquery_client():
@@ -245,14 +267,12 @@ if gemini_api_key :
                     st.session_state.chat_history.append(("assistant", bot_response))
                     st.chat_message("assistant").markdown(bot_response)
 
-                    
                     # Execute the SQL query by chat bot and keep history 
                     result_data = run_bigquery_query(sql_query)                                     # Run big query 
                     #st.session_state.chat_history.append(("assistant",result_data))                # For debug
                     #st.chat_message("assistant").markdown(result_data)                             # For debug
                     #st.write(f'Result Data:\n{result_data}')                                       # For debug
                     
-
                     # Execute the SQL query by chat bot + conversational human language and keep history
                     # Agent 04 Working 
                     answer = sql_result_to_conversation(result_data)
