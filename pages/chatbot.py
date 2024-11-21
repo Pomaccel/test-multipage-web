@@ -82,7 +82,8 @@ for i, prompt in enumerate(st.session_state.user_input_history, start=1):
         break  # Exit the loop after processing the first clicked history button
 
 # Input for Gemini API Key
-gemini_api_key = st.text_input("Gemini API Key: ", placeholder="Type your API Key here...", type="password")
+gemini_api_key = 'AIzaSyBgvCcXEPMApduoTr_w8qJBQsrMan8rEDM'          # For test
+#gemini_api_key = st.text_input("Gemini API Key: ", placeholder="Type your API Key here...", type="password") # for run
 
 # Function to initialize BigQuery client
 def init_bigquery_client():
@@ -171,76 +172,32 @@ if gemini_api_key:
             prompt = """You are an AI assistant that transforms user questions into SQL queries to retrieve data from a BigQuery database. 
                     Below is the detailed schema of the database, including table names, column names, data types, and descriptions. 
                     Use this information to generate accurate SQL queries based on user input. 
-                    ### Data Dictionary 
-                    
-                    Table 'madt-finalproject.finalproject_data.inv_transaction'
-                    data_dictionary = {
-                                        "customer": {
-                                            "CustomerID": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each customer"},
-                                            "Customer": {"type": "STRING", "description": "Name of the customer"},
-                                            "Country": {"type": "STRING", "description": "Country where the customer resides"},
-                                            "Customer_Category": {"type": "STRING", "description": "Category or type of customer"},
-                                            "provinceId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the province where the customer is located"},
-                                            "Latitude": {"type": "FLOAT", "description": "Latitude coordinate of the customer's location"},
-                                            "Longitude": {"type": "FLOAT", "description": "Longitude coordinate of the customer's location"}
-                                        },
-                                        "invoice": {
-                                            "InvoiceNo": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each invoice"},
-                                            "CustomerID": {"type": "STRING", "key": "Foreign Key", "description": "Customer ID linked to the invoice"},
-                                            "InvoiceDate": {"type": "DATE", "description": "Date when the invoice was issued"}
-                                        },
-                                        "product": {
-                                            "ProductId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each product"},
-                                            "lenstype": {"type": "STRING", "description": "Type of lens associated with the product"},
-                                            "Part_Description": {"type": "STRING", "description": "Description of the product parts"},
-                                            "Material_Type": {"type": "STRING", "description": "Type of material used in the product"},
-                                            "Lens_Type": {"type": "STRING", "description": "Category or type of lens"},
-                                            "price": {"type": "FLOAT", "description": "Price of the product"}
-                                        },
-                                        "reorder": {
-                                            "reorder_cause_id": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each reorder cause"},
-                                            "cause": {"type": "STRING", "description": "Reason for reorder (e.g., 'GOT WRONG POWER', 'GOT SCRATCHED LENSES')"}
-                                        },
-                                        "zone": {
-                                            "zoneId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each zone"},
-                                            "zone_name": {"type": "STRING", "description": "Name of the zone (e.g., 'C1_BANGKOK', 'C2_CENTRAL')"},
-                                            "regionId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the region associated with the zone"}
-                                        },
-                                        "region": {
-                                            "regionId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each region"},
-                                            "region_name": {"type": "STRING", "description": "Name of the region (e.g., 'Central', 'Eastern')"}
-                                        },
-                                        "transaction": {
-                                            "ProductId": {"type": "STRING", "key": "Foreign Key", "description": "ID of the product involved in the transaction"},
-                                            "TypeId": {"type": "STRING", "description": "Type of transaction"},
-                                            "InvoiceNo": {"type": "STRING", "key": "Foreign Key", "description": "Invoice number associated with the transaction"},
-                                            "Reorder_Cause_ID": {"type": "STRING", "key": "Foreign Key", "description": "ID of the reason for reorder, if applicable"},
-                                            "Quantity": {"type": "INT64", "description": "Quantity of the product in the transaction"}
-                                        },
-                                        "SalesPerson": {
-                                            "sales_id": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each salesperson"},
-                                            "salesperson_name": {"type": "STRING", "description": "Name of the salesperson"},
-                                            "average_round_trip_hours": {"type": "INT64", "description": "Average time for a round trip made by the salesperson"}
-                                        },
-                                        "CustomerSales": {
-                                            "customer_id": {"type": "STRING", "key": "Foreign Key", "description": "ID of the customer"},
-                                            "sales_id": {"type": "STRING", "key": "Primary Key", "description": "ID linking the salesperson to the customer"}
-                                        },
-                                        "province": {
-                                            "provinceId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each province"},
-                                            "province_name": {"type": "STRING", "description": "Province name in Thai"},
-                                            "province_name_eng": {"type": "STRING", "description": "Province name in English"},
-                                            "regionId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the region containing the province"},
-                                            "zoneId": {"type": "STRING", "key": "Foreign Key", "description": "Reference to the zone containing the province"}
-                                        },
-                                        "invoice_type": {
-                                            "typeId": {"type": "STRING", "key": "Primary Key", "description": "Unique identifier for each invoice type"},
-                                            "type_name": {"type": "STRING", "description": "Type of invoice (e.g., 'Credit Note', 'Debit Note', 'Invoice Sales', 'Other Charge')"}
-                                        }
-                                    }
-                    
-                    
-                    """
+
+                    ### Data Dictionary
+                    Table 'madt-finalproject.finalproject_data.transaction_summary_with_sales'
+
+                    | Column Name                       | Data Type   | Description                                 |
+                    |-----------------------------------|-------------|---------------------------------------------|
+                    | ProductId                         | STRING      | ProductId                                   |
+                    | InvoiceNo                         | STRING      | Invoice number.                             |
+                    | Return_item_cause_id              | STRING      | Return Item cause id                        |
+                    | Quantity                          | INT64       | Quantity of products in each invoice.       |
+                    | CustomerID                        | STRING      | Customer ID.                                |
+                    | InvoiceDate                       | Date        | Date of Invoice.                            |
+                    | CustomerName                      | STRING      | Customer name.                              |
+                    | CustomerCountry                   | STRING      | Country of Customer located                 |
+                    | CustomerCategory                  | STRING      | Category  of Customer                       |
+                    | ProductDescription                | STRING      | Product description                         |
+                    | ProductMaterialType               | STRING      | Material of Product                         |     
+                    | ProductLensTypeq                  | STRING      | Type of lens.                               |
+                    | ProductPrice                      | FLOAT64     | Price of each product.                      |
+                    | Return_item_cause                 | STRING      | Cause of Return Item                        |
+                    | SalesPersonName                   | STRING      | Sale Person name                            |
+                    | SalesPersonAvgRoundTripHours      | FLOAT64     | Sale Person average round trip hours        |
+
+                ### Relational Database Information
+                The 'CustomerID' column in the 'transaction_summary_with_sales' table is a one-to-one relationship with the 'CustomerID' column in the 'customer' table. 
+            """
 
             # Add chat history to the prompt
             full_prompt = f"{prompt}\nUser Input: {user_input}\n"
