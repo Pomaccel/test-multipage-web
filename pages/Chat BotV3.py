@@ -23,6 +23,10 @@ if "qry" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [] # Empty list
 
+# Create user_input history
+if "user_input_history" not in st.session_state:
+    st.session_state.user_input_history = []
+
 if "qry" not in st.session_state:
     st.session_state.qry = None  # Store SQL query here
 
@@ -39,6 +43,27 @@ if st.sidebar.button("Clear History"):
     st.session_state.user_input_history = []
     st.session_state.greeted = False
     st.session_state.rerun_needed = True  # Set flag to trigger a rerun
+
+# Loop through the user input history and create a button for each one
+for i, prompt in enumerate(st.session_state.user_input_history, start=1):
+    if st.sidebar.button(f"{i}. {prompt}"):
+        st.session_state.chat_history = [("user", prompt)]  # Start fresh with that prompt        
+        st.session_state.rerun_needed = True  # Set flag to trigger a rerun
+
+        user_input = prompt
+        try:
+            query_prompt = f"""You are an AI assistant that transforms user questions into SQL queries to retrieve data from a BigQuery database. 
+            Use the schema information and generate a SQL query based on the user's input: '{user_input}'."""
+
+            response = model.generate_content(query_prompt)
+            bot_response = response.text
+
+            st.session_state.qry = bot_response
+            st.session_state.chat_history.append(("assistant", bot_response))
+
+        except Exception as e:
+            st.error(f"Error generating AI response: {e}")
+        break  # Exit the loop after processing the first clicked history button
 
 # Create Upload Panel for upload JSON Key file
 upload_file = st.file_uploader("Upload Google Service Account Key JSON", type="json")
@@ -239,8 +264,8 @@ if gemini_api_key :
                     
                     plot_code = TF_graph(result_data).replace('```','').replace('python','').strip()    
                     #st.write(f"Output from TF_graph: {plot_code}")                                          # For debug
-                    #st.session_state.chat_history.append(("assistant",plot_code))
-                    #st.chat_message("assistant").markdown(plot_code)
+                    #st.session_state.chat_history.append(("assistant",plot_code))                           # For debug
+                    #st.chat_message("assistant").markdown(plot_code)                                        # For debug
                     #exec(plot_code)                                                                         # For debug  
 
                     # Define a local scope to safely execute the plot code
