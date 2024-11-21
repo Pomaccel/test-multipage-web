@@ -23,23 +23,22 @@ if "qry" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [] # Empty list
 
-# Sidebar to collect and display user inquiries
-if "user_inquiries" not in st.session_state:
-    st.session_state.user_inquiries = []  # List to collect user inquiries
-
-# Add a sidebar for displaying user inquiries
-with st.sidebar:
-    st.header("User Inquiries")
-    if st.session_state.user_inquiries:
-        for i, inquiry in enumerate(st.session_state.user_inquiries):
-            st.markdown(f"{i + 1}. {inquiry}")
-    else:
-        st.write("No inquiries yet.")
-    st.sidebar.write("---")
+if "qry" not in st.session_state:
+    st.session_state.qry = None  # Store SQL query here
 
 # Generate welcome message if gemini key correct
 if "greeted" not in st.session_state:
     st.session_state.greeted = False
+
+# Sidebar to display user input history as buttons
+st.sidebar.title("User Input History")
+
+# Add "Clear History" button in the sidebar
+if st.sidebar.button("Clear History"):
+    st.session_state.chat_history = []
+    st.session_state.user_input_history = []
+    st.session_state.greeted = False
+    st.session_state.rerun_needed = True  # Set flag to trigger a rerun
 
 # Create Upload Panel for upload JSON Key file
 upload_file = st.file_uploader("Upload Google Service Account Key JSON", type="json")
