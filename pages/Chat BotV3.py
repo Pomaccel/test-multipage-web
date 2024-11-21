@@ -105,39 +105,17 @@ for i, prompt in enumerate(st.session_state.user_input_history, start=1):
         user_input = prompt
 
         try:
-            # Generate bot response based on SQL query
-            bot_response = sql_query
+            query_prompt = f"""You are an AI assistant that transforms user questions into SQL queries to retrieve data from a BigQuery database. 
+            Use the schema information and generate a SQL query based on the user's input: '{user_input}'."""
+
+            response = model.generate_content(query_prompt)
+            bot_response = response.text
+
+            st.session_state.qry = bot_response
             st.session_state.chat_history.append(("assistant", bot_response))
-            st.chat_message("assistant").markdown(bot_response)
-
-            # Execute the SQL query and store the results
-            result_data = run_bigquery_query(sql_query)
-
-            # Convert SQL results to conversational response
-            conversational_answer = sql_result_to_conversation(result_data)
-            st.session_state.chat_history.append(("assistant", conversational_answer))
-            st.chat_message("assistant").markdown(conversational_answer)
-
-            # Generate and execute graph code
-            plot_code = TF_graph(result_data).replace('```', '').replace('python', '').strip()
-
-            # Execute plot code in a safe local scope
-            local_scope = {}
-            exec(plot_code, {}, local_scope)
-
-            # Check if a Plotly figure is generated
-            if "fig" in local_scope:  # Assuming the Plotly figure is stored in 'fig'
-                plotly_fig = local_scope["fig"]
-                st.chat_message("assistant").markdown("Here is the graph to represent the query:")
-                st.plotly_chart(plotly_fig)  # Render the Plotly figure in Streamlit
-            else:
-                st.chat_message("assistant").markdown("The code was executed successfully, but no graph was generated.")
 
         except Exception as e:
-            # Handle and display any errors during execution
-            error_message = f"Error executing the plot code: {e}"
-            st.chat_message("assistant").markdown(f"**Error:** {error_message}")
-        
+            st.error(f"Error generating AI response: {e}")
         break  # Exit the loop after processing the first clicked history button
 
 # Create Upload Panel for upload JSON Key file
@@ -326,7 +304,7 @@ if gemini_api_key :
 # i have a pen
 # i want to know unique Product Id  
 # i want to know sale person name and sale person average round trip hours top 10 
-# i want to know unique Customer Name  by each province
+
 # i want to know product lens type and Quantity  of each lens type 
 # thank you
 
