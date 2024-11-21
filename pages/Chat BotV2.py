@@ -242,8 +242,7 @@ if gemini_api_key :
                         # Display the graph in the chatbot
                         st.chat_message("assistant").markdown("Here is the graph to represent the query:")
                         fig_show = st.plotly_chart(plotly_fig)  # Render the Plotly figure in Streamlit
-                        st.session_state.chat_history.append(("assistant",fig_show))
-                        st.chat_message("assistant").markdown(fig_show)
+
                         
 
                     else:
