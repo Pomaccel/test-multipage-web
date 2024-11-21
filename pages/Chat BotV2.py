@@ -93,7 +93,7 @@ def TF_graph(result_data):
     1. Define a Pandas DataFrame named `df` based on the following data structure: {result_data}.
     2. Use plotly express to create a suitable graph based on the DataFrame structure and color by data.
     3. Return only executable Python code without markdown formatting or comments.
-    The code should be fully executable in a Python environment and ready to display in Streamlit."""
+    The code should be fully executable in a Python environment and ready to display"""
     response = agent_05.generate_content(result_prompt)
     return response.text.strip()
 
