@@ -239,7 +239,7 @@ if gemini_api_key :
                     
                     plot_code = TF_graph(result_data).replace('```','').replace('python','').strip()    
                     #st.write(f"Output from TF_graph: {plot_code}")                                          # For debug
-                    st.session_state.chat_history.append(("assistant",plot_code))
+                    #st.session_state.chat_history.append(("assistant",plot_code))
                     #st.chat_message("assistant").markdown(plot_code)
                     #exec(plot_code)                                                                         # For debug  
 
@@ -282,7 +282,6 @@ if gemini_api_key :
 # i want to know sale person name and sale person average round trip hours top 10 
 # i want to know unique Customer Name  by each province
 # i want to know product lens type and Quantity  of each lens type 
-# i want to know Customer Country by each Customer Category
 # thank you
 
 
