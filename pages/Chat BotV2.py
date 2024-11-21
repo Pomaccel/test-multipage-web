@@ -6,7 +6,7 @@ import json
 import db_dtypes
 
 # Main Application Title 
-st.title("ChatBot 0.4 MADT")
+st.title("ChatBot 0.41 MADT")
 
 
 # Initialize session state variables if not already present
