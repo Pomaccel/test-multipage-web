@@ -101,7 +101,7 @@ for i, prompt in enumerate(st.session_state.user_input_history, start=1):
     if st.sidebar.button(f"{i}. {prompt}"):
         # Reset chat history with the selected prompt
         st.session_state.chat_history = [("user", prompt)]
-        st.session_state.rerun_needed = True  # Set flag to trigger a rerun
+        st.session_state.rerun_needed = False  # Set flag to trigger a rerun
         user_input = prompt
 
         try:
