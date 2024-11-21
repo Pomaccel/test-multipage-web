@@ -94,7 +94,7 @@ if st.sidebar.button("Clear History"):
     st.session_state.chat_history = []
     st.session_state.user_input_history = []
     st.session_state.greeted = False
-    st.session_state.rerun_needed = True  # Set flag to trigger a rerun
+    st.session_state.rerun_needed = False  # Set flag to trigger a rerun
 
 # Loop through the user input history and create a button for each one
 for i, prompt in enumerate(st.session_state.user_input_history, start=1):
